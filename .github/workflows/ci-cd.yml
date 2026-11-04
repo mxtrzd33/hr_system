@@ -60,7 +60,7 @@ jobs:
 
     steps:
       - name: Deploy HR System locally
-        shell: pwsh
+        shell: powershell
         working-directory: C:\Users\devil\OneDrive\Desktop\System_HR
         run: |
           Write-Host "Updating local repository..."
