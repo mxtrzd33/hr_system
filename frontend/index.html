@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HR-system</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#"><span class="brand-mark">H</span><span>HR-system</span></a>
+    <nav>
+      <button class="nav-link active" data-page="dashboard">Обзор</button>
+      <button class="nav-link" data-page="employees">Сотрудники</button>
+      <button class="nav-link" data-page="vacancies">Вакансии</button>
+      <button class="nav-link" data-page="leaves">Отпуска</button>
+    </nav>
+    <div class="sidebar-bottom">Управление персоналом</div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div><div class="eyebrow">HR MANAGEMENT</div><h1 id="page-title">Обзор</h1></div><div class="user"><span class="avatar">А</span><span>Администратор</span></div></header>
+    <section id="content" class="content"></section>
+    <div id="toast" class="toast"></div>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
