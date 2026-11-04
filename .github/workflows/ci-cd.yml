@@ -1,4 +1,6 @@
+
 name: HR-system CI/CD
+
 on:
   push:
     branches: [main]
@@ -13,15 +15,21 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
+
       - name: Compile Python sources
         run: python -m compileall -q backend/app
-      - name: Validate Compose
+
+      - name: Validate Docker Compose
         run: docker compose config -q
 
   build-and-push:
@@ -29,9 +37,14 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Login to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
       - name: Build and push backend image
         run: |
           IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}/backend
@@ -42,17 +55,37 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 20
+
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            cd "${{ secrets.DEPLOY_PATH }}"
-            git pull origin main
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker image prune -f
+      - name: Deploy HR System locally
+        shell: powershell -ExecutionPolicy Bypass -File {0}
+        working-directory: C:\Users\devil\OneDrive\Desktop\System_HR
+        run: |
+          Write-Host "Updating local repository..."
+
+          git pull origin main
+
+          Write-Host "Checking Docker Compose configuration..."
+
+          docker compose config -q
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "Docker Compose configuration is invalid"
+          }
+
+          Write-Host "Building and starting HR System..."
+
+          docker compose up -d --build --remove-orphans
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "Docker Compose deployment failed"
+          }
+
+          Write-Host "Checking containers..."
+
+          docker compose ps
+
+          Write-Host "Local deployment completed"
+
